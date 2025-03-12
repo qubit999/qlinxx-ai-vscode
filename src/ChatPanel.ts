@@ -34,10 +34,10 @@ export class ChatPanel {
 			{ viewColumn: column, preserveFocus: true },
 			{
 				enableScripts: true,
-				retainContextWhenHidden: true, // <--- Retain state even when hidden
+				retainContextWhenHidden: true,
 				localResourceRoots: [
-					vscode.Uri.joinPath(extensionUri, 'src', 'static'),
-					vscode.Uri.joinPath(extensionUri, 'dist')
+					vscode.Uri.joinPath(extensionUri, 'dist'),
+					vscode.Uri.joinPath(extensionUri, 'src', 'static')
 				]
 			}
 		);
@@ -266,130 +266,136 @@ export class ChatPanel {
 	}
 
 	private _getHtmlForWebview() {
-		try {
-				// Retrieve stored messages from globalState
-				const stored = ChatPanel.extensionContext.globalState.get<{chat: string, edit: string}>('chatMessages') || { chat: '', edit: '' };
-			// Get the local paths to required scripts and styles
-			const markedUri = this._panel.webview.asWebviewUri(
-				vscode.Uri.joinPath(this._extensionUri, 'src', 'static', 'js', 'marked.min.js')
-			);
-			const scriptUri = this._panel.webview.asWebviewUri(
-				vscode.Uri.joinPath(this._extensionUri, 'src', 'static', 'js', 'webview.js')
-			);
-			const styleUri = this._panel.webview.asWebviewUri(
-				vscode.Uri.joinPath(this._extensionUri, 'src', 'static', 'css', 'webview.css')
-			);
+        try {
+            // Retrieve stored messages from globalState
+            const stored = ChatPanel.extensionContext.globalState.get<{chat: string, edit: string}>('chatMessages') || { chat: '', edit: '' };
 
-			// CSP - Content Security Policy
-			const nonce = this._getNonce();
-			
-			return `
-				<!DOCTYPE html>
-				<html lang="en">
-				<head>
-					<meta charset="UTF-8">
-					<meta name="viewport" content="width=device-width, initial-scale=1.0">
-					<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${this._panel.webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}'; font-src ${this._panel.webview.cspSource} https:;">
-					<title>QLINXX AI</title>
-					<link href="${styleUri}" rel="stylesheet" />
-					<script nonce="${nonce}" src="${markedUri}"></script>
-					<script nonce="${nonce}">
-						// Inject stored messages into the webview
-						window.initialChatState = ${JSON.stringify(stored.chat)};
-						window.initialEditState = ${JSON.stringify(stored.edit)};
-					</script>
-				</head>
-				<body>
-					<div class="app-container">
-						<header>
-							<div class="tabs">
-								<button id="chatTab" class="tab active">Chat</button>
-								<button id="editTab" class="tab">Edit</button>
-							</div>
-							<div class="file-info">
-								Active File: <span id="currentFile">None</span>
-							</div>
-							<div class="reset-context">
-								<button id="resetContextBtn">Reset Context</button>
-							</div>
-						</header>
-						
-						<main>
-							<!-- Chat Tab View -->
-							<div id="chatView" class="chat-view">
-								<div id="chatHistory" class="chat-history">
-									<!-- Messages will be added here -->
-									<div class="empty-state">
-										<p>Start a conversation with the AI assistant. The assistant uses advanced reasoning and responses can take longer to appear.</p>
-									</div>
-								</div>
-								
-								<div class="input-container">
-									<textarea id="chatInput" placeholder="Ask a question..." rows="1"></textarea>
-									<button id="sendChatBtn">
-										<span>Send</span>
-										<div class="btn-spinner" style="display: none;"></div>
-									</button>
-								</div>
-							</div>
-							
-							<!-- Edit Tab View -->
-							<div id="editView" class="edit-view" style="display: none;">
-								<!-- Edit History -->
-								<div id="editHistory" class="edit-history">
-									<!-- Empty state message -->
-									<div class="empty-state">
-										<p>Describe how you want to edit the current file</p>
-									</div>
-								</div>
-								
-								<!-- Edit Input View -->
-								<div id="editFormView" class="edit-form-view">
-									<div class="input-container">
-										<button class="file-picker-btn" title="Open File (Cmd+P)">
-											<svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-												<path fill="currentColor" d="M13.5 1h-11c-.83 0-1.5.67-1.5 1.5v11c0 .83.67 1.5 1.5 1.5h11c.83 0 1.5-.67 1.5-1.5v-11c0-.83-.67-1.5-1.5-1.5zm.5 12.5c0 .28-.22.5-.5.5h-11c-.28 0-.5-.22-.5-.5v-11c0-.28.22-.5.5-.5h11c.28 0 .5.22.5.5v11z"/>
-												<path fill="currentColor" d="M4 5h8v1h-8zM4 7h8v1h-8zM4 9h4v1h-4z"/>
-											</svg>
-										</button>
-										<textarea id="editInstruction" placeholder="Describe how you want to edit the current file..." rows="1"></textarea>
-										<button id="sendEditBtn">
-											<span>Generate</span>
-											<div class="btn-spinner" style="display: none;"></div>
-										</button>
-									</div>
-								</div>
-								
-								<!-- Edit Diff View -->
-								<div id="editDiffView" class="edit-diff-view">
-									<div class="diff-header">
-										<h3>Proposed Changes</h3>
-									</div>
-									<div id="diffView" class="diff-content">
-										<!-- Diff content will be inserted here -->
-									</div>
-									<div class="edit-actions">
-										<button id="acceptEditBtn" class="primary-btn">Accept Changes</button>
-										<button id="rejectEditBtn" class="secondary-btn">Discard</button>
-									</div>
-								</div>
-								
-								<!-- Loading Indicator -->
-								<div id="loadingIndicator" class="loading-indicator" style="display: none;">
-									<div class="spinner"></div>
-									<p>Generating edit proposal...</p>
-								</div>
-							</div>
-						</main>
-					</div>
-					
-					<script nonce="${nonce}" src="${scriptUri}"></script>
-				</body>
-				</html>
-			`;
-		} catch (error) {
-			console.error("Error generating HTML in _getHtmlForWebview:", error);
-			return `<html><body><h1>Error generating webview content</h1></body></html>`;
-		}
-	}
+            // Determine file paths based on environment variable
+            const isProd = process.env.NODE_ENV === 'production';
+            const markedPath = isProd ? ['dist', 'media', 'js', 'marked.min.js'] : ['src', 'static', 'js', 'marked.min.js'];
+            const scriptPath = isProd ? ['dist', 'media', 'js', 'webview.js'] : ['src', 'static', 'js', 'webview.js'];
+            const stylePath = isProd ? ['dist', 'media', 'css', 'webview.css'] : ['src', 'static', 'css', 'webview.css'];
+
+            const markedUri = this._panel.webview.asWebviewUri(
+                vscode.Uri.joinPath(this._extensionUri, ...markedPath)
+            );
+            const scriptUri = this._panel.webview.asWebviewUri(
+                vscode.Uri.joinPath(this._extensionUri, ...scriptPath)
+            );
+            const styleUri = this._panel.webview.asWebviewUri(
+                vscode.Uri.joinPath(this._extensionUri, ...stylePath)
+            );
+
+            // CSP - Content Security Policy
+            const nonce = this._getNonce();
+            
+            return `
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${this._panel.webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}'; font-src ${this._panel.webview.cspSource} https:;">
+                    <title>QLINXX AI</title>
+                    <link href="${styleUri}" rel="stylesheet" />
+                    <script nonce="${nonce}" src="${markedUri}"></script>
+                    <script nonce="${nonce}">
+                        // Inject stored messages into the webview
+                        window.initialChatState = ${JSON.stringify(stored.chat)};
+                        window.initialEditState = ${JSON.stringify(stored.edit)};
+                    </script>
+                </head>
+                <body>
+                    <div class="app-container">
+                        <header>
+                            <div class="tabs">
+                                <button id="chatTab" class="tab active">Chat</button>
+                                <button id="editTab" class="tab">Edit</button>
+                            </div>
+                            <div class="file-info">
+                                Active File: <span id="currentFile">None</span>
+                            </div>
+                            <div class="reset-context">
+                                <button id="resetContextBtn">Reset Context</button>
+                            </div>
+                        </header>
+                        
+                        <main>
+                            <!-- Chat Tab View -->
+                            <div id="chatView" class="chat-view">
+                                <div id="chatHistory" class="chat-history">
+                                    <!-- Messages will be added here -->
+                                    <div class="empty-state">
+                                        <p>Start a conversation with the AI assistant. The assistant uses advanced reasoning and responses can take longer to appear.</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="input-container">
+                                    <textarea id="chatInput" placeholder="Ask a question..." rows="1"></textarea>
+                                    <button id="sendChatBtn">
+                                        <span>Send</span>
+                                        <div class="btn-spinner" style="display: none;"></div>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Edit Tab View -->
+                            <div id="editView" class="edit-view" style="display: none;">
+                                <!-- Edit History -->
+                                <div id="editHistory" class="edit-history">
+                                    <!-- Empty state message -->
+                                    <div class="empty-state">
+                                        <p>Describe how you want to edit the current file</p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Edit Input View -->
+                                <div id="editFormView" class="edit-form-view">
+                                    <div class="input-container">
+                                        <button class="file-picker-btn" title="Open File (Cmd+P)">
+                                            <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+                                                <path fill="currentColor" d="M13.5 1h-11c-.83 0-1.5.67-1.5 1.5v11c0 .83.67 1.5 1.5 1.5h11c.83 0 1.5-.67 1.5-1.5v-11c0-.83-.67-1.5-1.5-1.5zm.5 12.5c0 .28-.22.5-.5.5h-11c-.28 0-.5-.22-.5-.5v-11c0-.28.22-.5.5-.5h11c.28 0 .5.22.5.5v11z"/>
+                                                <path fill="currentColor" d="M4 5h8v1h-8zM4 7h8v1h-8zM4 9h4v1h-4z"/>
+                                            </svg>
+                                        </button>
+                                        <textarea id="editInstruction" placeholder="Describe how you want to edit the current file..." rows="1"></textarea>
+                                        <button id="sendEditBtn">
+                                            <span>Generate</span>
+                                            <div class="btn-spinner" style="display: none;"></div>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Edit Diff View -->
+                                <div id="editDiffView" class="edit-diff-view">
+                                    <div class="diff-header">
+                                        <h3>Proposed Changes</h3>
+                                    </div>
+                                    <div id="diffView" class="diff-content">
+                                        <!-- Diff content will be inserted here -->
+                                    </div>
+                                    <div class="edit-actions">
+                                        <button id="acceptEditBtn" class="primary-btn">Accept Changes</button>
+                                        <button id="rejectEditBtn" class="secondary-btn">Discard</button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Loading Indicator -->
+                                <div id="loadingIndicator" class="loading-indicator" style="display: none;">
+                                    <div class="spinner"></div>
+                                    <p>Generating edit proposal...</p>
+                                </div>
+                            </div>
+                        </main>
+                    </div>
+                    
+                    <script nonce="${nonce}" src="${scriptUri}"></script>
+                </body>
+                </html>
+            `;
+        } catch (error) {
+            console.error("Error generating HTML in _getHtmlForWebview:", error);
+            return `<html><body><h1>Error generating webview content</h1></body></html>`;
+        }
+    }
 }

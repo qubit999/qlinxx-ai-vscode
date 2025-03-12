@@ -3,6 +3,7 @@
 'use strict';
 
 const path = require('path');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 //@ts-check
 /** @typedef {import('webpack').Configuration} WebpackConfig **/
@@ -48,11 +49,44 @@ const markedConfig = {
   // Use the full path to marked's main file
   entry: require.resolve('marked'),
   output: {
-    path: path.resolve(__dirname, 'src', 'static', 'js'),
+    path: path.resolve(__dirname, 'dist', 'media', 'js'),
     filename: 'marked.min.js',
     libraryTarget: 'umd'
   },
   target: 'web',
 };
 
-module.exports = [ extensionConfig, markedConfig ];
+const webviewConfig = {
+  mode: 'production',
+  entry: './src/static/js/webview.js',
+  output: {
+    path: path.resolve(__dirname, 'dist', 'media', 'js'),
+    filename: 'webview.js',
+    libraryTarget: 'umd'
+  },
+  target: 'web',
+};
+
+// Remove the old webviewCssConfig that used CopyWebpackPlugin and replace with asset module handling.
+const webviewCssConfig = {
+  mode: 'production',
+  entry: './src/static/css/webview.css',
+  output: {
+    path: path.resolve(__dirname, 'dist', 'media', 'css'),
+    filename: 'webview.css'
+  },
+  module: {
+    rules: [
+      {
+        test: /\.css$/,
+        type: 'asset/resource',
+        generator: {
+          filename: '[name][ext]' // Output as webview.css
+        }
+      }
+    ]
+  },
+  target: 'web'
+};
+
+module.exports = [ extensionConfig, markedConfig, webviewConfig, webviewCssConfig ];
