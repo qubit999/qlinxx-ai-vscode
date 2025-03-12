@@ -1,0 +1,88 @@
+{
+  "name": "qlinxx-ai-vscode",
+  "displayName": "QLINXX AI",
+  "publisher": "qlinxx",
+  "description": "Your AI Code Completion and Chat",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.98.0"
+  },
+  "keywords": [
+    "qlinxx",
+    "ai coding",
+    "coding ai",
+    "code chat",
+    "code completion",
+    "pair programmming"
+  ],
+  "categories": [
+    "AI",
+    "Chat",
+    "Programming Languages",
+    "Machine Learning"
+  ],
+  "activationEvents": [
+    "*"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "qlinxx-test-command",
+        "title": "QLINXX Test Command"
+      },
+      {
+        "command": "qlinxx-chat-window",
+        "title": "QLINXX Chat Window"
+      },
+      {
+        "command": "qlinxx-register-command",
+        "title": "QLINXX Register"
+      },
+      {
+        "command": "qlinxx-login-command",
+        "title": "QLINXX Login"
+      },
+      {
+        "command": "qlinxx-logout-command",
+        "title": "QLINXX Logout"
+      },
+      {
+        "command": "qlinxx-inline-edit-command",
+        "title": "QLINXX Inline Edit"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "webpack",
+    "watch": "webpack --watch",
+    "package": "webpack --mode production --devtool hidden-source-map",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "npm run compile-tests && npm run compile && npm run lint",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "20.x",
+    "@types/vscode": "^1.98.0",
+    "@typescript-eslint/eslint-plugin": "^8.25.0",
+    "@typescript-eslint/parser": "^8.25.0",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1",
+    "css-loader": "^7.1.2",
+    "eslint": "^9.21.0",
+    "style-loader": "^4.0.0",
+    "ts-loader": "^9.5.2",
+    "typescript": "^5.7.3",
+    "webpack": "^5.98.0",
+    "webpack-cli": "^6.0.1"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "marked": "^15.0.7",
+    "openai": "^4.86.2"
+  }
+}
