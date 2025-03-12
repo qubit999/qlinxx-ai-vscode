@@ -4,6 +4,7 @@
   "publisher": "qlinxx",
   "description": "Your AI Code Completion and Chat",
   "version": "0.0.1",
+  "icon": "Q_128.png",
   "engines": {
     "vscode": "^1.98.0"
   },
