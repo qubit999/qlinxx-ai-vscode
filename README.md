@@ -1,6 +1,16 @@
 # QLINXX AI
 
-QLINXX AI is an advanced VS Code extension offering AI-driven code completion and chat features.
+QLINXX AI is a VS Code extension offering AI-driven code completion and chat features.
+
+## Note
+
+**Usage of this extension is available exclusively with the premium plus pass.**
+
+## Registration & Buying License
+
+Register for QLINXX AI using the link below and get a license.
+
+[Register Now](https://qlinxx.com/register)
 
 ## Commands
 
@@ -10,12 +20,6 @@ QLINXX AI is an advanced VS Code extension offering AI-driven code completion an
 - **QLINXX Login**: Sign in to access personalized features.
 - **QLINXX Logout**: Sign out of your account.
 - **QLINXX Inline Edit**: Use AI to assist with inline code editing.
-
-## Registration
-
-Register for QLINXX AI using the link below. Note: Usage of this extension is available exclusively with the premium pluss pass.
-
-[Register Now](https://qlinxx.com/register)
 
 ## Additional Information
 
